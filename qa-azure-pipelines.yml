@@ -37,21 +37,22 @@ jobs:
         arguments: '-f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/cloud/deploy.yaml'
 
 - job: deployingress
+  dependsOn: build
   pool:
     vmImage: 'ubuntu-latest'
   steps:
-    - task: Kubernetes@1
-      inputs:
-        connectionType: 'Kubernetes Service Connection'
-        kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
-        command: 'apply'
-        arguments: '-f $(Pipeline.Workspace)/manifests/ingress-rules.yml'
+  - task: KubernetesManifest@0
+    displayName: Deploy
+    inputs:
+      action: 'deploy'
+      kubernetesServiceConnection: 'qaakspocrandd-default-admin'
+      manifests: '$(Build.SourcesDirectory)/manifests/ingress-rules.yml'
 
 - deployment: Deploy
   pool:
     vmImage: 'ubuntu-latest'
   displayName: Deploy
-  dependsOn: build
+  dependsOn: deployingress
   environment: 'qaakspocrandd.default'
   strategy:
     runOnce:
