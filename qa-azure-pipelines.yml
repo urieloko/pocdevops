@@ -37,22 +37,27 @@ jobs:
     vmImage: 'ubuntu-latest'
   steps:
   - task: Kubernetes@1
+    displayName: 'Ingress Controller'
     inputs:
       connectionType: 'Kubernetes Service Connection'
       kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
       command: 'apply'
       arguments: '-f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/cloud/deploy.yaml'
-  - task: KubernetesManifest@0
-    displayName: Deploy
-    inputs:
-      action: 'deploy'
-      kubernetesServiceConnection: 'qaakspocrandd-default-admin'
-      manifests: '$(Build.SourcesDirectory)/manifests/ingress-rules.yml'
+      outputFormat: 'none'
 
-- deployment: AKS
+  - task: Kubernetes@1
+    displayName: 'Ingress Rules'
+    inputs:
+      connectionType: 'Kubernetes Service Connection'
+      kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
+      command: 'apply'
+      arguments: '-f manifests/ingress-rules.yml'
+      outputFormat: 'none'
+
+- deployment: Service
   pool:
     vmImage: 'ubuntu-latest'
-  displayName: Deploy
+  displayName: Service
   dependsOn: Ingress
   environment: 'qaakspocrandd.default'
   strategy:
@@ -79,7 +84,7 @@ jobs:
     displayName: 'FunctionalTests'
   - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact Selenium Results'    
-  dependsOn: Deploy    
+  dependsOn: Service    
   condition: succeeded()
 - job: JMeterTests
   pool:
