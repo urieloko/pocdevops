@@ -40,12 +40,13 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   steps:
-    - task: Kubernetes@1
-      inputs:
-        connectionType: 'Kubernetes Service Connection'
-        kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
-        command: 'apply'
-        arguments: '-f $(Pipeline.Workspace)/manifests/ingress-rules.yml'
+  - task: KubernetesManifest@0
+    displayName: Deploy
+    inputs:
+      action: 'deploy'
+      kubernetesServiceConnection: 'qaakspocrandd-default-admin'
+      namespace: 'default'
+      manifests: 'manifests/pocrandd.yml'
 
 - deployment: Deploy
   pool:
