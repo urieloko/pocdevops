@@ -14,8 +14,9 @@ variables:
   imageRepository: 'pocrandd'
   tag: $(Build.BuildNumber)
   UriAppPocRandD: 'http://52.153.228.52/'
+
 jobs:
-- job: build
+- job: CR
   pool:
     vmImage: 'ubuntu-latest'
   steps:
@@ -29,18 +30,18 @@ jobs:
 
     - publish: manifests
       artifact: manifests
-    - task: Kubernetes@1
-      inputs:
-        connectionType: 'Kubernetes Service Connection'
-        kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
-        command: 'apply'
-        arguments: '-f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/cloud/deploy.yaml'
 
-- job: deployingress
+- job: Ingress
   dependsOn: build
   pool:
     vmImage: 'ubuntu-latest'
   steps:
+  - task: Kubernetes@1
+    inputs:
+      connectionType: 'Kubernetes Service Connection'
+      kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
+      command: 'apply'
+      arguments: '-f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/cloud/deploy.yaml'
   - task: KubernetesManifest@0
     displayName: Deploy
     inputs:
@@ -48,7 +49,7 @@ jobs:
       kubernetesServiceConnection: 'qaakspocrandd-default-admin'
       manifests: '$(Build.SourcesDirectory)/manifests/ingress-rules.yml'
 
-- deployment: Deploy
+- deployment: AKS
   pool:
     vmImage: 'ubuntu-latest'
   displayName: Deploy
@@ -64,6 +65,7 @@ jobs:
               action: 'deploy'
               manifests: '$(Pipeline.Workspace)/manifests/pocrandd.yml'
               containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+
 - job: SeleniumTests
   pool:
     vmImage: 'windows-2019'
@@ -79,16 +81,3 @@ jobs:
   displayName: 'Publish Artifact Selenium Results'    
   dependsOn: Deploy    
   condition: succeeded()
-- job: JMeterTests
-  pool:
-    vmImage: ubuntu-latest
-  dependsOn: SeleniumTests
-  steps:
-    - task: Bash@3
-      displayName: Execute JMeter tests
-      inputs:
-        targetType: filePath
-        filePath: 'jmeter/test.sh'
-        arguments: '$PWD jmeterpocrandd.jmx $(hostJMeter) $(buildId)'
-        workingDirectory: jmeter
-        failOnStderr: false
