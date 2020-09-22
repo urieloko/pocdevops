@@ -8,14 +8,15 @@ trigger:
 
 variables:
   buildId: QA-$(Build.BuildNumber)
-  hostJMeter: '52.153.228.52'
+  hostJMeter: '40.124.90.48'
   buildConfiguration: 'Release'
   containerRegistry: 'qaacrpocrandd.azurecr.io'
   imageRepository: 'pocrandd'
   tag: $(Build.BuildNumber)
-  UriAppPocRandD: 'http://52.153.228.52/'
+  UriAppPocRandD: 'http://40.124.90.48/'
+
 jobs:
-- job: build
+- job: CR
   pool:
     vmImage: 'ubuntu-latest'
   steps:
@@ -29,30 +30,35 @@ jobs:
 
     - publish: manifests
       artifact: manifests
-    - task: Kubernetes@1
-      inputs:
-        connectionType: 'Kubernetes Service Connection'
-        kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
-        command: 'apply'
-        arguments: '-f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/cloud/deploy.yaml'
 
-- job: deployingress
-  dependsOn: build
+- job: Ingress
+  dependsOn: CR
   pool:
     vmImage: 'ubuntu-latest'
   steps:
-  - task: KubernetesManifest@0
-    displayName: Deploy
+  - task: Kubernetes@1
+    displayName: 'Ingress Controller'
     inputs:
-      action: 'deploy'
-      kubernetesServiceConnection: 'qaakspocrandd-default-admin'
-      manifests: '$(Build.SourcesDirectory)/manifests/ingress-rules.yml'
+      connectionType: 'Kubernetes Service Connection'
+      kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
+      command: 'apply'
+      arguments: '-f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/cloud/deploy.yaml'
+      outputFormat: 'none'
 
-- deployment: Deploy
+  - task: Kubernetes@1
+    displayName: 'Ingress Rules'
+    inputs:
+      connectionType: 'Kubernetes Service Connection'
+      kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
+      command: 'apply'
+      arguments: '-f manifests/ingress-rules.yml'
+      outputFormat: 'none'
+
+- deployment: Service
   pool:
     vmImage: 'ubuntu-latest'
-  displayName: Deploy
-  dependsOn: deployingress
+  displayName: Service
+  dependsOn: Ingress
   environment: 'qaakspocrandd.default'
   strategy:
     runOnce:
@@ -64,6 +70,7 @@ jobs:
               action: 'deploy'
               manifests: '$(Pipeline.Workspace)/manifests/pocrandd.yml'
               containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+
 - job: SeleniumTests
   pool:
     vmImage: 'windows-2019'
@@ -77,7 +84,7 @@ jobs:
     displayName: 'FunctionalTests'
   - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact Selenium Results'    
-  dependsOn: Deploy    
+  dependsOn: Service    
   condition: succeeded()
 - job: JMeterTests
   pool:

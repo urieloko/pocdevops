@@ -105,3 +105,4 @@ stages:
           arguments: '$PWD jmeterpocrandd.jmx $(hostJMeter) $(buildId)'
           workingDirectory: jmeter
           failOnStderr: false
+          
