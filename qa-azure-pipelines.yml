@@ -8,12 +8,12 @@ trigger:
 
 variables:
   buildId: QA-$(Build.BuildNumber)
-  hostJMeter: '52.153.228.52'
+  hostJMeter: '40.124.90.48'
   buildConfiguration: 'Release'
   containerRegistry: 'qaacrpocrandd.azurecr.io'
   imageRepository: 'pocrandd'
   tag: $(Build.BuildNumber)
-  UriAppPocRandD: 'http://52.153.228.52/'
+  UriAppPocRandD: 'http://40.124.90.48/'
 
 jobs:
 - job: CR
@@ -52,7 +52,7 @@ jobs:
 - deployment: AKS
   pool:
     vmImage: 'ubuntu-latest'
-  displayName: Deploy
+  displayName: AKS
   dependsOn: Ingress
   environment: 'qaakspocrandd.default'
   strategy:
