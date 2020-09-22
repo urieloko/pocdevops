@@ -32,7 +32,7 @@ jobs:
       artifact: manifests
 
 - job: Ingress
-  dependsOn: build
+  dependsOn: CR
   pool:
     vmImage: 'ubuntu-latest'
   steps:
@@ -53,7 +53,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   displayName: Deploy
-  dependsOn: deployingress
+  dependsOn: Ingress
   environment: 'qaakspocrandd.default'
   strategy:
     runOnce:
