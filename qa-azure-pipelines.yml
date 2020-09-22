@@ -32,7 +32,7 @@ jobs:
       artifact: manifests
 
 - job: Ingress
-  dependsOn: build
+  dependsOn: CR
   pool:
     vmImage: 'ubuntu-latest'
   steps:
@@ -52,7 +52,7 @@ jobs:
 - deployment: AKS
   pool:
     vmImage: 'ubuntu-latest'
-  displayName: Deploy
+  displayName: AKS
   dependsOn: deployingress
   environment: 'qaakspocrandd.default'
   strategy:
@@ -79,7 +79,7 @@ jobs:
     displayName: 'FunctionalTests'
   - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact Selenium Results'    
-  dependsOn: Deploy    
+  dependsOn: AKS    
   condition: succeeded()
 - job: JMeterTests
   pool:
