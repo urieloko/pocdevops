@@ -1,0 +1,94 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- QA
+
+variables:
+  buildId: QA-$(Build.BuildNumber)
+  hostJMeter: '52.153.228.52'
+  buildConfiguration: 'Release'
+  containerRegistry: 'qaacrpocrandd.azurecr.io'
+  imageRepository: 'pocrandd'
+  tag: $(Build.BuildNumber)
+  UriAppPocRandD: 'http://52.153.228.52/'
+jobs:
+- job: build
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'qaacrpocrandd'
+        repository: '$(imageRepository)'
+        command: 'buildAndPush'
+        Dockerfile: 'src/Dockerfile'
+        tags: '$(tag)'
+
+    - publish: manifests
+      artifact: manifests
+    - task: Kubernetes@1
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
+        command: 'apply'
+        arguments: '-f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/cloud/deploy.yaml'
+
+- job: deployingress
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - task: KubernetesManifest@0
+    displayName: Deploy
+    inputs:
+      action: 'deploy'
+      kubernetesServiceConnection: 'qaakspocrandd-default-admin'
+      namespace: 'default'
+      manifests: 'manifests/pocrandd.yml'
+
+- deployment: Deploy
+  pool:
+    vmImage: 'ubuntu-latest'
+  displayName: Deploy
+  dependsOn: build
+  environment: 'qaakspocrandd.default'
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+          - task: KubernetesManifest@0
+            displayName: Deploy to kubernetes cluster
+            inputs:
+              action: 'deploy'
+              manifests: '$(Pipeline.Workspace)/manifests/pocrandd.yml'
+              containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+- job: SeleniumTests
+  pool:
+    vmImage: 'windows-2019'
+  steps:
+  - script: dotnet build src --configuration $(buildConfiguration)
+    displayName: 'Build Tests Project'
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'test'
+      projects: 'src/PocRandD.SeleniumTest/PocRandD.SeleniumTest.csproj'
+    displayName: 'FunctionalTests'
+  - task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact Selenium Results'    
+  dependsOn: Deploy    
+  condition: succeeded()
+- job: JMeterTests
+  pool:
+    vmImage: ubuntu-latest
+  dependsOn: SeleniumTests
+  steps:
+    - task: Bash@3
+      displayName: Execute JMeter tests
+      inputs:
+        targetType: filePath
+        filePath: 'jmeter/test.sh'
+        arguments: '$PWD jmeterpocrandd.jmx $(hostJMeter) $(buildId)'
+        workingDirectory: jmeter
+        failOnStderr: false
