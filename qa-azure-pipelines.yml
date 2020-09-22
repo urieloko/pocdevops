@@ -54,7 +54,7 @@ jobs:
 - deployment: Service
   pool:
     vmImage: 'ubuntu-latest'
-  displayName: AKS
+  displayName: Service
   dependsOn: Ingress
   environment: 'qaakspocrandd.default'
   strategy:
@@ -81,7 +81,7 @@ jobs:
     displayName: 'FunctionalTests'
   - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact Selenium Results'    
-  dependsOn: AKS    
+  dependsOn: Service    
   condition: succeeded()
 - job: JMeterTests
   pool:
