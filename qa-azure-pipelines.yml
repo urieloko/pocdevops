@@ -53,7 +53,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   displayName: AKS
-  dependsOn: deployingress
+  dependsOn: Ingress
   environment: 'qaakspocrandd.default'
   strategy:
     runOnce:
