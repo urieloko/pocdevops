@@ -47,7 +47,7 @@ jobs:
       connectionType: 'Kubernetes Service Connection'
       kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
       command: 'apply'
-      arguments: '-f $(Pipeline.Workspace)/manifests/ingress-rules.yml'
+      arguments: '-f manifests/ingress-rules.yml'
 
 - deployment: AKS
   pool:
