@@ -37,19 +37,21 @@ jobs:
     vmImage: 'ubuntu-latest'
   steps:
   - task: Kubernetes@1
+    displayName: 'Ingress Controller'
     inputs:
       connectionType: 'Kubernetes Service Connection'
       kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
       command: 'apply'
       arguments: '-f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/cloud/deploy.yaml'
   - task: Kubernetes@1
+    displayName: 'Ingress Rules'
     inputs:
       connectionType: 'Kubernetes Service Connection'
       kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
       command: 'apply'
       arguments: '-f manifests/ingress-rules.yml'
 
-- deployment: AKS
+- deployment: Service
   pool:
     vmImage: 'ubuntu-latest'
   displayName: AKS
