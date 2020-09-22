@@ -1,0 +1,107 @@
+trigger:
+- master
+
+variables:
+  buildConfiguration: 'Release'
+  region: 'southcentralus'
+  buildId: $(Build.BuildNumber)
+  buildIdHyphen: $[replace(variables['Build.BuildNumber'],'.','-')]
+  resourcesId: $(buildId)
+  resourceGroup: RG-$(resourcesId)
+  appServicePlan: SvcPlan-$(resourcesId)
+  UriAppPocRandD: $[format('https://appsvs-{0}.azurewebsites.net', replace(variables['Build.BuildNumber'],'.','-'))]
+  webAppName: $[format('appsvs-{0}', replace(variables['Build.BuildNumber'],'.','-'))]
+  hostJMeter: $[format('appsvs-{0}.azurewebsites.net', replace(variables['Build.BuildNumber'],'.','-'))]
+  
+stages:
+- stage: Development
+  jobs:
+  - job: Build_UnitTests_Analysis_And_Deploy
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: 'az group create --name $(resourceGroup) --location $(region)'
+      displayName: 'Create Resource Group'
+    - task: AzureResourceManagerTemplateDeployment@3
+      inputs:
+        deploymentScope: 'Resource Group'
+        azureResourceManagerConnection: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
+        subscriptionId: 'd6c2c6fa-eaa9-4d22-bd11-da6eacb13f90'
+        action: 'Create Or Update Resource Group'
+        templateLocation: 'Linked artifact'
+        resourceGroupName: $(resourceGroup)
+        location: $(region)
+        csmFile: 'infra/Templates/Web App/template.json'
+        csmParametersFile: 'infra/Templates/Web App/parameters.json'
+        overrideParameters: '-serverFarmResourceGroup $(resourceGroup) -hostingPlanName $(appServicePlan) -name AppSvs-$(buildIdHyphen)'
+        deploymentMode: 'Incremental'
+      displayName: 'Create App Service Plan'
+    - task: Bash@3
+      displayName: 'Esperar respuesta de App aprovisionada'
+      inputs:
+        targetType: filePath
+        filePath: 'infra/waitForApp.sh'
+        arguments: '$(UriAppPocRandD)'
+        workingDirectory: infra
+        failOnStderr: false
+    - task: DotNetCoreCLI@2
+      displayName: 'Create the Publish'
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: 'src/PocRandD/PocRandD.csproj'
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+        zipAfterPublish: true
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact'
+      condition: succeededOrFailed()
+    - task: AzureRmWebAppDeployment@4
+      displayName: 'Deploy to Azure AppService'
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: 'SuscripcionMaru'
+        appType: 'webAppLinux'
+        WebAppName: '$(webAppName)'
+        packageForLinux: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+        RuntimeStack: 'DOTNETCORE|3.1'
+    - task: Bash@3
+      displayName: 'Esperar respuesta de App publicada'
+      inputs:
+        targetType: filePath
+        filePath: 'infra/waitForApp.sh'
+        arguments: '$(UriAppPocRandD)'
+        workingDirectory: infra
+        failOnStderr: false
+  - job: SeleniumTests
+    pool:
+      vmImage: 'windows-2019'
+    steps:
+    - script: dotnet build src --configuration $(buildConfiguration)
+      displayName: 'Build Tests Project'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'test'
+        projects: 'src/PocRandD.SeleniumTest/PocRandD.SeleniumTest.csproj'
+      displayName: 'FunctionalTests'
+    - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact Selenium Results'    
+    dependsOn: Build_UnitTests_Analysis_And_Deploy    
+    condition: succeeded()
+  - job: JMeterTests
+    pool:
+      vmImage: ubuntu-latest
+    dependsOn: SeleniumTests
+    steps:
+      - task: Bash@3
+        displayName: Execute JMeter tests
+        inputs:
+          targetType: filePath
+          filePath: 'jmeter/test.sh'
+          arguments: '$PWD jmeterpocrandd.jmx $(hostJMeter) $(buildId)'
+          workingDirectory: jmeter
+          failOnStderr: false
