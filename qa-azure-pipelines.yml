@@ -32,7 +32,7 @@ jobs:
       artifact: manifests
 
 - job: Ingress
-  dependsOn: CR
+  dependsOn: build
   pool:
     vmImage: 'ubuntu-latest'
   steps:
@@ -42,18 +42,18 @@ jobs:
       kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
       command: 'apply'
       arguments: '-f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/cloud/deploy.yaml'
-  - task: KubernetesManifest@0
-    displayName: Deploy
+  - task: Kubernetes@1
     inputs:
-      action: 'deploy'
-      kubernetesServiceConnection: 'qaakspocrandd-default-admin'
-      manifests: '$(Build.SourcesDirectory)/manifests/ingress-rules.yml'
+      connectionType: 'Kubernetes Service Connection'
+      kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
+      command: 'apply'
+      arguments: '-f $(Pipeline.Workspace)/manifests/ingress-rules.yml'
 
 - deployment: AKS
   pool:
     vmImage: 'ubuntu-latest'
-  displayName: AKS
-  dependsOn: Ingress
+  displayName: Deploy
+  dependsOn: deployingress
   environment: 'qaakspocrandd.default'
   strategy:
     runOnce:
@@ -79,5 +79,18 @@ jobs:
     displayName: 'FunctionalTests'
   - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact Selenium Results'    
-  dependsOn: AKS    
+  dependsOn: Deploy    
   condition: succeeded()
+- job: JMeterTests
+  pool:
+    vmImage: ubuntu-latest
+  dependsOn: SeleniumTests
+  steps:
+    - task: Bash@3
+      displayName: Execute JMeter tests
+      inputs:
+        targetType: filePath
+        filePath: 'jmeter/test.sh'
+        arguments: '$PWD jmeterpocrandd.jmx $(hostJMeter) $(buildId)'
+        workingDirectory: jmeter
+        failOnStderr: false
