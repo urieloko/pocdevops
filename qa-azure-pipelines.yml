@@ -8,6 +8,11 @@ trigger:
 
 pool:
   vmImage: 'ubuntu-latest'
+variables:
+  containerRegistry: 'qaacrpocrandd.azurecr.io'
+  imageRepository: 'pocrandd'
+  tag: $(Build.BuildNumber)
+
 jobs:
 - job: build
   steps:
