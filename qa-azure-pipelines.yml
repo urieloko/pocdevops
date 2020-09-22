@@ -45,8 +45,7 @@ jobs:
     inputs:
       action: 'deploy'
       kubernetesServiceConnection: 'qaakspocrandd-default-admin'
-      namespace: 'default'
-      manifests: 'manifests/pocrandd.yml'
+      manifests: '$(Build.SourcesDirectory)/manifests/ingress-rules.yml'
 
 - deployment: Deploy
   pool:
