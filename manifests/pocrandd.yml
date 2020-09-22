@@ -27,7 +27,7 @@ kind: Service
 metadata:
   name: pocrandd-svc
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: pocrandd-pod
   ports:
