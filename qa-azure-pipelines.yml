@@ -6,8 +6,9 @@
 trigger:
 - QA
 
-
 variables:
+  buildId: QA-$(Build.BuildNumber)
+  hostJMeter: '52.153.228.52'
   buildConfiguration: 'Release'
   containerRegistry: 'qaacrpocrandd.azurecr.io'
   imageRepository: 'pocrandd'
