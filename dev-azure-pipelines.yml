@@ -20,6 +20,13 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
+    - task: AzureKeyVault@1
+      inputs:
+        azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
+        KeyVaultName: 'keyvaultpocdevops'
+        SecretsFilter: 'SonarToken'
+        RunAsPreJob: false
+      displayName: 'Obtener token para SonarCloud'
     - script: dotnet build src --configuration $(buildConfiguration)
       displayName: 'Build'
     - task: DotNetCoreCLI@2
@@ -33,7 +40,7 @@ stages:
       displayName: 'Static_Analysis__BeginAnalysis'
     - script: sudo dotnet build src --configuration Release
       displayName: 'Static_Analysis__Building'
-    - script: sudo SONAR_TOKEN=224f0485e5839ae2692e8344a82b3cb4afc94533 dotnet sonarscanner end
+    - script: sudo SONAR_TOKEN=$(SonarToken) dotnet sonarscanner end
       displayName: 'Static_Analysis__EndAnalysis'
     - task: AzureCLI@2
       inputs:
