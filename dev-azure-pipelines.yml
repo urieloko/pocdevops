@@ -20,6 +20,21 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
+    - script: dotnet build src --configuration $(buildConfiguration)
+      displayName: 'Build'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'test'
+        projects: 'src/PocRandD.Test/PocRandD.Test.csproj'
+      displayName: 'Unit_Tests'
+    - script: sudo dotnet tool install --tool-path=/usr/bin dotnet-sonarscanner --version 4.10.0
+      displayName: 'Static_Analysis__InstallSonnarScanner'
+    - script: sudo dotnet sonarscanner begin /o:gerardoat /k:gerardoat_pocdevops /d:sonar.host.url=https://sonarcloud.io /version:$(buildId)
+      displayName: 'Static_Analysis__BeginAnalysis'
+    - script: sudo dotnet build src --configuration Release
+      displayName: 'Static_Analysis__Building'
+    - script: sudo SONAR_TOKEN=224f0485e5839ae2692e8344a82b3cb4afc94533 dotnet sonarscanner end
+      displayName: 'Static_Analysis__EndAnalysis'
     - task: AzureCLI@2
       inputs:
         azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
@@ -31,11 +46,10 @@ stages:
       inputs:
         deploymentScope: 'Resource Group'
         azureResourceManagerConnection: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
-        subscriptionId: 'd6c2c6fa-eaa9-4d22-bd11-da6eacb13f90'
         action: 'Create Or Update Resource Group'
+        resourceGroupName: '$(resourceGroup)'
+        location: '$(region)'
         templateLocation: 'Linked artifact'
-        resourceGroupName: $(resourceGroup)
-        location: $(region)
         csmFile: 'infra/Templates/Web App/template.json'
         csmParametersFile: 'infra/Templates/Web App/parameters.json'
         overrideParameters: '-serverFarmResourceGroup $(resourceGroup) -hostingPlanName $(appServicePlan) -name AppSvs-$(buildIdHyphen)'
@@ -64,7 +78,7 @@ stages:
       displayName: 'Deploy to Azure AppService'
       inputs:
         ConnectionType: 'AzureRM'
-        azureSubscription: 'SuscripcionMaru'
+        azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
         appType: 'webAppLinux'
         WebAppName: '$(webAppName)'
         packageForLinux: '$(Build.ArtifactStagingDirectory)/**/*.zip'
@@ -105,3 +119,12 @@ stages:
           arguments: '$PWD jmeterpocrandd.jmx $(hostJMeter) $(buildId)'
           workingDirectory: jmeter
           failOnStderr: false
+      - task: AzureCLI@2
+        displayName: 'Deleting Resource Group'
+        inputs:
+          azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: 'az group delete --name ''$(resourceGroup)'' --yes'
+          addSpnToEnvironment: true
+          useGlobalConfig: true        
