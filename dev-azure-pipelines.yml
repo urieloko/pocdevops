@@ -31,11 +31,10 @@ stages:
       inputs:
         deploymentScope: 'Resource Group'
         azureResourceManagerConnection: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
-        subscriptionId: 'd6c2c6fa-eaa9-4d22-bd11-da6eacb13f90'
         action: 'Create Or Update Resource Group'
+        resourceGroupName: '$(resourceGroup)'
+        location: '$(region)'
         templateLocation: 'Linked artifact'
-        resourceGroupName: $(resourceGroup)
-        location: $(region)
         csmFile: 'infra/Templates/Web App/template.json'
         csmParametersFile: 'infra/Templates/Web App/parameters.json'
         overrideParameters: '-serverFarmResourceGroup $(resourceGroup) -hostingPlanName $(appServicePlan) -name AppSvs-$(buildIdHyphen)'
