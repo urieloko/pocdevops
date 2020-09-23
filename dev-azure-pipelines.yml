@@ -64,7 +64,7 @@ stages:
       displayName: 'Deploy to Azure AppService'
       inputs:
         ConnectionType: 'AzureRM'
-        azureSubscription: 'SuscripcionMaru'
+        azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
         appType: 'webAppLinux'
         WebAppName: '$(webAppName)'
         packageForLinux: '$(Build.ArtifactStagingDirectory)/**/*.zip'
