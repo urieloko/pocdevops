@@ -25,7 +25,7 @@ stages:
         azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
         KeyVaultName: 'keyvaultpocdevops'
         SecretsFilter: 'SonarToken'
-        RunAsPreJob: false
+        RunAsPreJob: true
       displayName: 'Obtener token para SonarCloud'
     - script: dotnet build src --configuration $(buildConfiguration)
       displayName: 'Build'
