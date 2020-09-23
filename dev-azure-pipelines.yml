@@ -119,4 +119,12 @@ stages:
           arguments: '$PWD jmeterpocrandd.jmx $(hostJMeter) $(buildId)'
           workingDirectory: jmeter
           failOnStderr: false
-          
+      - task: AzureCLI@2
+        displayName: 'Deleting Resource Group'
+        inputs:
+          azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: 'az group delete --name ''$(resourceGroup)'' --yes'
+          addSpnToEnvironment: true
+          useGlobalConfig: true        
