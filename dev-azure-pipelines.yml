@@ -12,6 +12,7 @@ variables:
   UriAppPocRandD: $[format('https://appsvs-{0}.azurewebsites.net', replace(variables['Build.BuildNumber'],'.','-'))]
   webAppName: $[format('appsvs-{0}', replace(variables['Build.BuildNumber'],'.','-'))]
   hostJMeter: $[format('appsvs-{0}.azurewebsites.net', replace(variables['Build.BuildNumber'],'.','-'))]
+  fqdnContenedorReportes: 'https://resulttests.blob.core.windows.net/%24web'
   
 stages:
 - stage: Development
@@ -24,7 +25,7 @@ stages:
       inputs:
         azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
         KeyVaultName: 'keyvaultpocdevops'
-        SecretsFilter: 'SonarToken'
+        SecretsFilter: '*'
         RunAsPreJob: true
       displayName: 'Obtener token para SonarCloud'
     - script: dotnet build src --configuration $(buildConfiguration)
@@ -123,7 +124,7 @@ stages:
         inputs:
           targetType: filePath
           filePath: 'jmeter/test.sh'
-          arguments: '$PWD jmeterpocrandd.jmx $(hostJMeter) $(buildId)'
+          arguments: '$PWD jmeterpocrandd.jmx $(hostJMeter) $(buildId) $(fqdnContenedorReportes) $(SasContenedorReportesJMeter)'
           workingDirectory: jmeter
           failOnStderr: false
       - task: AzureCLI@2

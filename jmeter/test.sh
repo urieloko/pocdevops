@@ -2,8 +2,8 @@ rootPath=$1
 testFile=$2
 host=$3
 idReporte=$4
-fqdnContenedor="https://resulttests.blob.core.windows.net/%24web"
-sasContenedor="sv=2019-10-10&st=2020-09-20T18%3A38%3A00Z&se=2020-12-31T19%3A38%3A00Z&sr=c&sp=rwl&sig=PA9SPfvV5HeCaSEMR6NL4HCfw%2FWNU%2Fkq5DJVr1DfpS4%3D"
+fqdnContenedor=$5
+sasContenedor=$6
 
 echo "======================== PARAMETROS ========================"
 echo "Root path: $rootPath"
