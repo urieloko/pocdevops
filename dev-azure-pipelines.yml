@@ -26,7 +26,7 @@ stages:
       inputs:
         azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
         KeyVaultName: 'keyvaultpocdevops'
-        SecretsFilter: '*'
+        SecretsFilter: 'SonarToken'
         RunAsPreJob: true
       displayName: 'Obtener token para SonarCloud'
     - script: dotnet build src --configuration $(buildConfiguration)
@@ -120,6 +120,13 @@ stages:
       vmImage: ubuntu-latest
     dependsOn: SeleniumTests
     steps:
+      - task: AzureKeyVault@1
+        inputs:
+          azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
+          KeyVaultName: 'keyvaultpocdevops'
+          SecretsFilter: 'SasContenedorReportesJMeterB64'
+          RunAsPreJob: true
+        displayName: 'Obtener token para JMeter'
       - task: Bash@3
         displayName: Execute JMeter tests
         inputs:
