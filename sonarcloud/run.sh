@@ -3,8 +3,8 @@
 ROOTPATH=$1
 VERSIONANALISIS=$2
 ls -l
-echo "======= Instalando Sonar Scaner Path: dotnet tool install --tool-path=$ROOTPATH --version 4.10.0"
-dotnet tool install --tool-path=$ROOTPATH --version 4.10.0
+echo "======= Instalando Sonar Scaner Path: $ROOTPATH"
+dotnet tool install --tool-path=$ROOTPATH dotnet-sonarscanner --version 4.10.0
 ls -l
 echo "======= Inicializando análisis Versión: $VERSIONANALISIS"
 dotnet sonarscanner begin /o:gerardoat /k:gerardoat_pocdevops /d:sonar.host.url=https://sonarcloud.io /version:$VERSIONANALISIS
