@@ -13,6 +13,7 @@ variables:
   webAppName: $[format('appsvs-{0}', replace(variables['Build.BuildNumber'],'.','-'))]
   hostJMeter: $[format('appsvs-{0}.azurewebsites.net', replace(variables['Build.BuildNumber'],'.','-'))]
   fqdnContenedorReportes: 'https://resulttests.blob.core.windows.net/%24web'
+  uriReportesJMeter: 'https://resulttests.z21.web.core.windows.net/'
   
 stages:
 - stage: Development
@@ -112,7 +113,7 @@ stages:
       displayName: 'FunctionalTests'
     - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact Selenium Results'    
-    dependsOn: Build_UnitTests_Analysis_And_Deploy    
+    dependsOn: Build_UnitTests_Analysis_And_Deploy
     condition: succeeded()
   - job: JMeterTests
     pool:
@@ -124,9 +125,11 @@ stages:
         inputs:
           targetType: filePath
           filePath: 'jmeter/test.sh'
-          arguments: '$PWD jmeterpocrandd.jmx $(hostJMeter) $(buildId) $(fqdnContenedorReportes) $(SasContenedorReportesJMeter)'
+          arguments: '$PWD jmeterpocrandd.jmx $(hostJMeter) $(buildId) $(fqdnContenedorReportes)'
           workingDirectory: jmeter
           failOnStderr: false
+        env:
+          SAS_CONTENEDOR_REPORTESB64: $(SasContenedorReportesJMeterB64)
       - task: AzureCLI@2
         displayName: 'Deleting Resource Group'
         inputs:
