@@ -36,13 +36,15 @@ stages:
         command: 'test'
         projects: 'src/PocRandD.Test/PocRandD.Test.csproj'
       displayName: 'Unit_Tests'
-    - script: sudo dotnet tool install --tool-path=/usr/bin dotnet-sonarscanner --version 4.10.0
-      displayName: 'Static_Analysis__InstallSonnarScanner'
-    - script: sudo dotnet sonarscanner begin /o:gerardoat /k:gerardoat_pocdevops /d:sonar.host.url=https://sonarcloud.io /version:$(buildId)
-      displayName: 'Static_Analysis__BeginAnalysis'
-    - script: sudo dotnet build src --configuration Release
-      displayName: 'Static_Analysis__Building'
-    - script: sudo SONAR_TOKEN=$(SonarToken) dotnet sonarscanner end
+    - task: Bash@3
+      inputs:
+        targetType: filePath
+        filePath: 'sonarcloud/run.sh'
+        arguments: ''
+        workingDirectory: sonarcloud
+        failOnStderr: false
+      env:
+          SONAR_TOKEN: $(SonarToken)
       displayName: 'Static_Analysis__EndAnalysis'
     - task: AzureCLI@2
       inputs:
