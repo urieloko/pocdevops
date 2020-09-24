@@ -3,7 +3,7 @@ rootPath=$1
 testFile=$2
 host=$3
 idReporte=$4
-fqdnContenedor=$5
+fqdnContenedor="https://resulttests.blob.core.windows.net/%24web"
 
 echo "======================== PARAMETROS ========================"
 echo "Root path: $rootPath"
