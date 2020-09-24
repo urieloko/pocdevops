@@ -1,3 +1,4 @@
+#!/bin/bash
 rootPath=$1
 testFile=$2
 host=$3
