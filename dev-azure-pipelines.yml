@@ -41,7 +41,7 @@ stages:
         targetType: filePath
         filePath: 'sonarcloud/run.sh'
         arguments: '$PWD $(buildId)'
-        workingDirectory: $PWD
+        workingDirectory: '$PWD'
         failOnStderr: true
       env:
           SONAR_TOKEN: $(SonarToken)
