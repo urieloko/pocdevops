@@ -18,7 +18,7 @@ variables:
 stages:
 - stage: Development
   jobs:
-  - job: Build_UnitTests_Analysis_And_Deploy
+  - job: Build_UnitTests_And_Analysis
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -46,6 +46,10 @@ stages:
       env:
           SONARTOKEN: $(SonarToken)
       displayName: 'Static_Analysis'
+  - job: Deploy_to_Web_App_Dev
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
     - task: AzureCLI@2
       inputs:
         azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
@@ -102,6 +106,8 @@ stages:
         arguments: '$(UriAppPocRandD)'
         workingDirectory: infra
         failOnStderr: false
+    dependsOn: Build_UnitTests_And_Analysis
+    condition: succeeded()
   - job: SeleniumTests
     pool:
       vmImage: 'windows-2019'
@@ -115,7 +121,7 @@ stages:
       displayName: 'FunctionalTests'
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact Selenium Results'    
-    dependsOn: Build_UnitTests_Analysis_And_Deploy
+    dependsOn: Deploy_to_Web_App_Dev
     condition: succeeded()
   - job: JMeterTests
     pool:
