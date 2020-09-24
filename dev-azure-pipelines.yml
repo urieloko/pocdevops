@@ -114,7 +114,7 @@ stages:
         projects: 'src/PocRandD.SeleniumTest/PocRandD.SeleniumTest.csproj'
       displayName: 'FunctionalTests'
     - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact Selenium Results'    
+      displayName: 'Publish Artifact Selenium Results'    
     dependsOn: Build_UnitTests_Analysis_And_Deploy
     condition: succeeded()
   - job: JMeterTests
