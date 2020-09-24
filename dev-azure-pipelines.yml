@@ -45,7 +45,7 @@ stages:
         failOnStderr: false
       env:
           SONAR_TOKEN: $(SonarToken)
-      displayName: 'Static_Analysis__EndAnalysis'
+      displayName: 'Static_Analysis'
     - task: AzureCLI@2
       inputs:
         azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
