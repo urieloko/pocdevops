@@ -11,8 +11,10 @@ echo "Test file: $testFile"
 echo "Host: $host"
 echo "Nombre reporte: $idReporte"
 
-# echo "Permisos para archivo $rootPath/run.sh"
-# chmod +x $rootPath/run.sh
+echo "===================== Decodificar SAS"
+echo "SAS_CONTENEDOR_REPORTESB64: $SAS_CONTENEDOR_REPORTESB64"
+SAS_CONTENEDOR_REPORTES=`echo $SAS_CONTENEDOR_REPORTESB64 | base64 --decode`
+echo "SAS_CONTENEDOR_REPORTES: $SAS_CONTENEDOR_REPORTES"
 
 T_DIR=.
 
@@ -27,9 +29,6 @@ rm -f $T_DIR/test-plan.jtl $T_DIR/jmeter.log  > /dev/null 2>&1
 	-Jhost=$host \
 	-n -t /test/$testFile -l $T_DIR/test-plan.jtl -j $T_DIR/jmeter.log \
 	-e -o $R_DIR
-
-echo "===================== Decodificar SAS"
-SAS_CONTENEDOR_REPORTES=`echo $SAS_CONTENEDOR_REPORTESB64 | base64 --decode`
 
 echo "===================== Descarga de AzCopy"
 wget -O azcopy.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy.tar.gz --strip-components=1
