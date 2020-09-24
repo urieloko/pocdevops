@@ -40,9 +40,9 @@ stages:
       inputs:
         targetType: filePath
         filePath: 'sonarcloud/run.sh'
-        arguments: ''
+        arguments: '$PWD $(buildId)'
         workingDirectory: sonarcloud
-        failOnStderr: false
+        failOnStderr: true
       env:
           SONAR_TOKEN: $(SonarToken)
       displayName: 'Static_Analysis'
