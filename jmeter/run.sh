@@ -1,3 +1,4 @@
+#!/bin/bash
 NAME="jmetertest"
 IMAGE="justb4/jmeter:latest"
 ROOTPATH=$1

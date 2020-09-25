@@ -1,3 +1,4 @@
+#!/bin/bash
 uri=$1
 
 echo "========== Iniciando espera de respuesta para $uri ..."

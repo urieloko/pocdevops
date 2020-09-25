@@ -12,14 +12,23 @@ variables:
   UriAppPocRandD: $[format('https://appsvs-{0}.azurewebsites.net', replace(variables['Build.BuildNumber'],'.','-'))]
   webAppName: $[format('appsvs-{0}', replace(variables['Build.BuildNumber'],'.','-'))]
   hostJMeter: $[format('appsvs-{0}.azurewebsites.net', replace(variables['Build.BuildNumber'],'.','-'))]
+  fqdnContenedorReportes: 'https://resulttests.blob.core.windows.net/%24web'
+  uriReportesJMeter: 'https://resulttests.z21.web.core.windows.net/'
   
 stages:
 - stage: Development
   jobs:
-  - job: Build_UnitTests_Analysis_And_Deploy
+  - job: Build_UnitTests_And_Analysis
     pool:
       vmImage: 'ubuntu-latest'
     steps:
+    - task: AzureKeyVault@1
+      inputs:
+        azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
+        KeyVaultName: 'keyvaultpocdevops'
+        SecretsFilter: 'SonarToken'
+        RunAsPreJob: true
+      displayName: 'Obtener token para SonarCloud'
     - script: dotnet build src --configuration $(buildConfiguration)
       displayName: 'Build'
     - task: DotNetCoreCLI@2
@@ -27,14 +36,20 @@ stages:
         command: 'test'
         projects: 'src/PocRandD.Test/PocRandD.Test.csproj'
       displayName: 'Unit_Tests'
-    - script: sudo dotnet tool install --tool-path=/usr/bin dotnet-sonarscanner --version 4.10.0
-      displayName: 'Static_Analysis__InstallSonnarScanner'
-    - script: sudo dotnet sonarscanner begin /o:gerardoat /k:gerardoat_pocdevops /d:sonar.host.url=https://sonarcloud.io /version:$(buildId)
-      displayName: 'Static_Analysis__BeginAnalysis'
-    - script: sudo dotnet build src --configuration Release
-      displayName: 'Static_Analysis__Building'
-    - script: sudo SONAR_TOKEN=224f0485e5839ae2692e8344a82b3cb4afc94533 dotnet sonarscanner end
-      displayName: 'Static_Analysis__EndAnalysis'
+    - task: Bash@3
+      inputs:
+        targetType: filePath
+        filePath: 'sonarcloud/run.sh'
+        arguments: '$(buildId)'
+        workingDirectory: './'
+        failOnStderr: true
+      env:
+          SONARTOKEN: $(SonarToken)
+      displayName: 'Static_Analysis'
+  - job: Deploy_to_Web_App_Dev
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
     - task: AzureCLI@2
       inputs:
         azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
@@ -91,6 +106,8 @@ stages:
         arguments: '$(UriAppPocRandD)'
         workingDirectory: infra
         failOnStderr: false
+    dependsOn: Build_UnitTests_And_Analysis
+    condition: succeeded()
   - job: SeleniumTests
     pool:
       vmImage: 'windows-2019'
@@ -103,22 +120,31 @@ stages:
         projects: 'src/PocRandD.SeleniumTest/PocRandD.SeleniumTest.csproj'
       displayName: 'FunctionalTests'
     - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact Selenium Results'    
-    dependsOn: Build_UnitTests_Analysis_And_Deploy    
+      displayName: 'Publish Artifact Selenium Results'    
+    dependsOn: Deploy_to_Web_App_Dev
     condition: succeeded()
   - job: JMeterTests
     pool:
       vmImage: ubuntu-latest
     dependsOn: SeleniumTests
     steps:
+      - task: AzureKeyVault@1
+        inputs:
+          azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
+          KeyVaultName: 'keyvaultpocdevops'
+          SecretsFilter: 'SasContenedorReportesJMeterB64'
+          RunAsPreJob: true
+        displayName: 'Obtener token para JMeter'
       - task: Bash@3
         displayName: Execute JMeter tests
         inputs:
           targetType: filePath
           filePath: 'jmeter/test.sh'
-          arguments: '$PWD jmeterpocrandd.jmx $(hostJMeter) $(buildId)'
+          arguments: '$PWD jmeterpocrandd.jmx $(hostJMeter) $(buildId) $(fqdnContenedorReportes)'
           workingDirectory: jmeter
           failOnStderr: false
+        env:
+          SAS_CONTENEDOR_REPORTESB64: $(SasContenedorReportesJMeterB64)
       - task: AzureCLI@2
         displayName: 'Deleting Resource Group'
         inputs:
