@@ -36,6 +36,20 @@ stages:
         command: 'test'
         projects: 'src/PocRandD.Test/PocRandD.Test.csproj'
       displayName: 'Unit_Tests'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'test'
+        projects: 'src/PocRandD.Test/PocRandD.Test.csproj'
+        arguments: '--collect:"XPlat Code Coverage" --results-directory:"src/PocRandD.Test/TestResults"'
+        workingDirectory: "./"
+        publishTestResults: false
+      displayName: 'Collect Coverage for Unit Tests'
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: 'cobertura'
+        summaryFileLocation: 'src/PocRandD.Test/TestResults/**/coverage.cobertura.xml'
+        pathToSources: 'src'
+      displayName: 'Publish Coverage Results'
     - task: Bash@3
       inputs:
         targetType: filePath
