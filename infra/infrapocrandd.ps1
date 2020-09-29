@@ -9,11 +9,11 @@ $asp = $env+'asp'+$prj
 $aks = $env+'aks'+$prj
 
 # Creacion del grupo de recursos
-Write-Output 'Verificacion de existencia de '$rgp
+Write-Output 'Verificacion de existencia de $($rgp)'
 $rgCheck = az group list --query "[?name=='$rgp']" | ConvertFrom-Json
 $rgExists = $rgCheck.Length -gt 0
 if (!$rgExists){
-    Write-Output 'Creando '$rgp
+    Write-Output 'Creando $rgp'
     az group create --name $rgp --location $loc
     Write-Output $rgp' creado'
 }
