@@ -4,7 +4,7 @@ variables:
   azureSubscription: 'rveasppocrandd'
   region: 'southcentralus'
   environment: 'uat'
-  project: 'pocrandd4'
+  project: 'pocrandd5'
 pool:
   vmImage: 'windows-latest'
 
