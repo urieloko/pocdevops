@@ -66,6 +66,6 @@ if (!$aksExists) {
     $spId = $(az keyvault secret show --vault-name $akv --name $asp'appId' | ConvertFrom-Json).value
     $spPw = $(az keyvault secret show --vault-name $akv --name $asp'password' | ConvertFrom-Json).value
     Write-Output 'Creando '$aks
-    az aks create -n $aks -g $rgp --location $loc --node-count 1 --load-balancer-sku basic --service-principal $spId --client-secret $spPw
+    az aks create -n $aks -g $rgp --location $loc --node-count 1 --load-balancer-sku basic --service-principal $spId --client-secret $spPw --generate-ssh-keys
     Write-Output $aks' creado'
 }
