@@ -1,10 +1,10 @@
 trigger:
 - UAT/infra
 variables:
-  azureSubscription: 'dosppocrandd'
+  azureSubscription: 'rveasppocrandd'
   region: 'southcentralus'
   environment: 'uat'
-  project: 'pocrandd8'
+  project: 'pocrandd9'
 pool:
   vmImage: 'windows-latest'
 
