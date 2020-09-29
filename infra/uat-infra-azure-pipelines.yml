@@ -1,7 +1,7 @@
 trigger:
 - UAT/infra
 variables:
-  azureSubscription: 'dosppocrandd'
+  azureSubscription: 'rveasppocrandd'
   region: 'southcentralus'
   environment: 'uat'
   project: 'pocrandd'
