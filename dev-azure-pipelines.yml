@@ -148,7 +148,7 @@ stages:
           KeyVaultName: 'keyvaultpocdevops'
           SecretsFilter: 'SasContenedorReportesJMeterB64'
           RunAsPreJob: true
-        displayName: 'Obtener token para JMeter'
+        displayName: 'Obtener SAS para reportes JMeter'
       - task: Bash@3
         displayName: Execute JMeter tests
         inputs:

@@ -1,0 +1,18 @@
+trigger:
+- UAT/infra
+variables:
+  azureSubscription: 'rveasppocrandd'
+  region: 'southcentralus'
+  environment: 'uat'
+  project: 'pocrandd9'
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: $(azureSubscription)
+    scriptType: 'ps'
+    scriptLocation: 'scriptPath'
+    scriptPath: 'infra/infrapocrandd.ps1'
+    arguments: '$(environment) $(project) $(region)'
