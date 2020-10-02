@@ -109,7 +109,7 @@ jobs:
     - SeleniumTests
     - Ingress
   variables:
-    hostJMeter: $(ingressip)
+    hostJMeter: dependencies.Ingress.outputs['IngressIp.ip']
   steps:
     - task: AzureKeyVault@1
       inputs:
