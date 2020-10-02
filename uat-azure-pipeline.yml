@@ -30,8 +30,24 @@ jobs:
     - publish: manifests
       artifact: manifests
 
-- job: Ingress
+- deployment: Service
+  pool:
+    vmImage: 'ubuntu-latest'
+  displayName: Service
   dependsOn: CR
+  environment: 'uatakspocrandd.default'
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+          - task: KubernetesManifest@0
+            displayName: Deploy to kubernetes cluster
+            inputs:
+              action: 'deploy'
+              manifests: '$(Pipeline.Workspace)/manifests/pocrandd.yml'
+              containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+- job: Ingress
+  dependsOn: Service
   pool:
     vmImage: 'ubuntu-latest'
   steps:
@@ -43,7 +59,6 @@ jobs:
       command: 'apply'
       arguments: '-f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/cloud/deploy.yaml'
       outputFormat: 'none'
-
   - task: Kubernetes@1
     displayName: 'Ingress Rules'
     inputs:
@@ -65,23 +80,6 @@ jobs:
   - bash: echo '##vso[task.setvariable variable=ip;isOutput=true]$(GetIngressIp.KubectlOutput)'
     name: IngressIp
       
-- deployment: Service
-  pool:
-    vmImage: 'ubuntu-latest'
-  displayName: Service
-  dependsOn: Ingress
-  environment: 'uatakspocrandd.default'
-  strategy:
-    runOnce:
-      deploy:
-        steps:
-          - task: KubernetesManifest@0
-            displayName: Deploy to kubernetes cluster
-            inputs:
-              action: 'deploy'
-              manifests: '$(Pipeline.Workspace)/manifests/pocrandd.yml'
-              containers: '$(containerRegistry)/$(imageRepository):$(tag)'
-
 - job: SeleniumTests
   pool:
     vmImage: 'windows-2019'
