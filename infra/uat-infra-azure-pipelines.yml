@@ -1,5 +1,5 @@
 trigger:
-- UAT/infra
+- release
 variables:
   azureSubscription: 'dosppocrandd'
   region: 'southcentralus'
