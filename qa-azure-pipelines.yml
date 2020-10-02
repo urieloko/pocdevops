@@ -92,7 +92,7 @@ jobs:
     - Ingress 
   condition: succeeded()
   variables:
-    UriAppPocRandD: $[format('https://{0}/', GetIngressIp.ingressip)]
+    UriAppPocRandD: $[format('https://{0}/', $(ingressip))]
   steps:
   - script: dotnet build src --configuration $(buildConfiguration)
     displayName: 'Build Tests Project'
@@ -111,7 +111,7 @@ jobs:
     - SeleniumTests
     - Ingress
   variables:
-    hostJMeter: $ingressip
+    hostJMeter: $(ingressip)
   steps:
     - task: AzureKeyVault@1
       inputs:
