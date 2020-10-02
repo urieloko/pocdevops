@@ -74,7 +74,8 @@ jobs:
     inputs:
       azureSubscription: '$(azConnection)'
       scriptLocation: 'inlineScript'
-      inlineScript: |       
+      inlineScript: |
+        kubectl get all
         while true
         do
           IP=$(kubectl get ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'')
