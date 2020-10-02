@@ -54,6 +54,7 @@ jobs:
       arguments: '-f manifests/ingress-rules.yml'
       outputFormat: 'none'
   - task: Kubernetes@1
+    name: GetIngressIp
     displayName: 'Get Ingress IP'
     inputs:
       connectionType: 'Kubernetes Service Connection'
@@ -61,7 +62,8 @@ jobs:
       namespace: 'default'
       command: 'get'
       arguments: 'ingress --namespace default ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'''
-      
+      outputFormat: json
+  - script: echo $(GetIngressIp.out)
 - deployment: Service
   pool:
     vmImage: 'ubuntu-latest'
