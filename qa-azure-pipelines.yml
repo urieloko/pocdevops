@@ -90,7 +90,7 @@ jobs:
     - Ingress 
   condition: succeeded()
   variables:
-    UriAppPocRandD: $[format('https://{0}/', $[dependencies.Ingress.outputs['GetIngressIp.KubectlOutput']])]
+    UriAppPocRandD: $[format('https://{0}/', dependencies.Ingress.outputs['GetIngressIp.KubectlOutput'])]
   steps:
   - script: dotnet build src --configuration $(buildConfiguration)
     displayName: 'Build Tests Project'
