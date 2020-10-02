@@ -81,11 +81,11 @@ jobs:
         do
           IP=$(kubectl get ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'')
           echo $IP
-          if [ $IP -ne '''' ]; then
+          if [ -n $IP ]; then
             echo "Ingress ip is $IP"
             break
           else
-            echo "Got $STATUS :( Not done yet..."
+            echo "Got $IP :( Not done yet..."
           fi
           sleep 5
         done
