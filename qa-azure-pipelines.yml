@@ -64,8 +64,10 @@ jobs:
       arguments: 'ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'''
       outputFormat: 'none'
     env:
-        SONARTOKEN: $(KubectlOutput)
-
+        INGRESSIP: $(KubectlOutput)
+  - script: |
+      echo $INGRESSIP
+      
 - deployment: Service
   pool:
     vmImage: 'ubuntu-latest'
