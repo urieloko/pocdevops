@@ -60,7 +60,7 @@ jobs:
       kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
       namespace: 'default'
       command: 'get'
-      arguments: 'all'
+      arguments: 'ingress --namespace default ingress-rules -o json'
       outputFormat: 'json'
 
 - deployment: Service
