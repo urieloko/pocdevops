@@ -63,7 +63,7 @@ jobs:
       command: 'get'
       arguments: 'ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'''
       outputFormat: 'none'
-  - bash: echo '##vso[task.setvariable variable=ingressip]$(GetIngressIp.KubectlOutput) | sed ''s/\x27/ /g'''
+  - bash: echo '##vso[task.setvariable variable=ingressip]$(GetIngressIp.KubectlOutput) | sed s/"'"/" "/g '
   - script: |
       echo $(ingressip)
       
