@@ -13,7 +13,6 @@ variables:
   containerRegistry: 'qaacrpocrandd.azurecr.io'
   imageRepository: 'pocrandd'
   tag: $(Build.BuildNumber)
-  UriAppPocRandD: 'http://40.124.90.48/'
 
 jobs:
 - job: CR
@@ -63,10 +62,8 @@ jobs:
       command: 'get'
       arguments: 'ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'''
       outputFormat: 'none'
-    env:
-        INGRESSIP: $(KubectlOutput)
   - script: |
-      echo $INGRESSIP
+      echo $(GetIngressIp.KubectlOutput)
       
 - deployment: Service
   pool:
@@ -103,7 +100,11 @@ jobs:
 - job: JMeterTests
   pool:
     vmImage: ubuntu-latest
-  dependsOn: SeleniumTests
+  dependsOn: 
+    - SeleniumTests
+    - Ingress
+  variables:
+    hostJMeter: $[ dependencies.Ingress.outputs['GetIngressIp.KubectlOutput'] ]
   steps:
     - task: AzureKeyVault@1
       inputs:
