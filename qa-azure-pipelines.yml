@@ -62,7 +62,7 @@ jobs:
       namespace: 'default'
       command: 'get'
       arguments: 'ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'''
-      outputFormat: json
+      outputFormat: 'none'
   - script: echo $(GetIngressIp.out)
 - deployment: Service
   pool:
