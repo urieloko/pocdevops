@@ -75,6 +75,7 @@ jobs:
       azureSubscription: '$(azConnection)'
       scriptLocation: 'inlineScript'
       inlineScript: |
+        az aks get-credentials -g $(rgpName) -n $(aksName)
         kubectl get all
         while true
         do
