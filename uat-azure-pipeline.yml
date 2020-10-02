@@ -12,6 +12,8 @@ variables:
   containerRegistry: 'uatacrpocrandd.azurecr.io'
   imageRepository: 'pocrandd'
   tag: $(Build.BuildNumber)
+  aksConnection: 'uatakspocrandd-default-admin'
+  azConnection: 'dosppocrandd'
 jobs:
 - job: CR
   pool:
@@ -19,7 +21,7 @@ jobs:
   steps:
     - task: Docker@2
       inputs:
-        containerRegistry: 'qaacrpocrandd'
+        containerRegistry: 'uatacrpocrandd'
         repository: '$(imageRepository)'
         command: 'buildAndPush'
         Dockerfile: 'src/Dockerfile'
@@ -37,7 +39,7 @@ jobs:
     displayName: 'Ingress Controller'
     inputs:
       connectionType: 'Kubernetes Service Connection'
-      kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
+      kubernetesServiceEndpoint: $(aksConnection)
       command: 'apply'
       arguments: '-f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/cloud/deploy.yaml'
       outputFormat: 'none'
@@ -46,7 +48,7 @@ jobs:
     displayName: 'Ingress Rules'
     inputs:
       connectionType: 'Kubernetes Service Connection'
-      kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
+      kubernetesServiceEndpoint: $(aksConnection)
       command: 'apply'
       arguments: '-f manifests/ingress-rules.yml'
       outputFormat: 'none'
@@ -55,7 +57,7 @@ jobs:
     displayName: 'Get Ingress IP'
     inputs:
       connectionType: 'Kubernetes Service Connection'
-      kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
+      kubernetesServiceEndpoint: $(aksConnection)
       namespace: 'default'
       command: 'get'
       arguments: 'ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'''
@@ -68,7 +70,7 @@ jobs:
     vmImage: 'ubuntu-latest'
   displayName: Service
   dependsOn: Ingress
-  environment: 'qaakspocrandd.default'
+  environment: 'uatakspocrandd.default'
   strategy:
     runOnce:
       deploy:
@@ -111,7 +113,7 @@ jobs:
   steps:
     - task: AzureKeyVault@1
       inputs:
-        azureSubscription: 'Free Trial(d6c2c6fa-eaa9-4d22-bd11-da6eacb13f90)'
+        azureSubscription: $(azConnection)
         KeyVaultName: 'keyvaultpocdevops'
         SecretsFilter: 'SasContenedorReportesJMeterB64'
         RunAsPreJob: true
