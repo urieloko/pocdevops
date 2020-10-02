@@ -61,7 +61,7 @@ jobs:
       kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
       namespace: 'default'
       command: 'get'
-      arguments: 'ingress --namespace default ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'''
+      arguments: 'ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'''
       outputFormat: json
   - script: echo $(GetIngressIp.out)
 - deployment: Service
