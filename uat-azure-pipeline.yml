@@ -14,6 +14,8 @@ variables:
   tag: $(Build.BuildNumber)
   aksConnection: 'uatakspocrandd-default-admin'
   azConnection: 'dosppocrandd'
+  aksName: 'uatakspocrandd'
+  rgpName: 'uatrgppocrandd'
 jobs:
 - job: CR
   pool:
@@ -67,6 +69,24 @@ jobs:
       command: 'apply'
       arguments: '-f manifests/ingress-rules.yml'
       outputFormat: 'none'
+  - task: AzureCLI@1
+    displayName: Wait for IP
+    inputs:
+      azureSubscription: '$(azConnection)'
+      scriptLocation: 'inlineScript'
+      inlineScript: |       
+        while true
+        do
+          IP=$(kubectl get ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'')
+          if [ $IP -ne '''' ]; then
+            echo "Ingress ip is $IP"
+            break
+          else
+            echo "Got $STATUS :( Not done yet..."
+          fi
+          sleep 5
+        done
+
   - task: Kubernetes@1
     name: GetIngressIp
     displayName: 'Get Ingress IP'
@@ -77,6 +97,8 @@ jobs:
       command: 'get'
       arguments: 'ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'''
       outputFormat: 'none'
+
+
   - bash: echo '##vso[task.setvariable variable=ip;isOutput=true]$(GetIngressIp.KubectlOutput)'
     name: IngressIp
       
