@@ -80,6 +80,7 @@ jobs:
         while true
         do
           IP=$(kubectl get ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'')
+          echo $IP
           if [ $IP -ne '''' ]; then
             echo "Ingress ip is $IP"
             break
