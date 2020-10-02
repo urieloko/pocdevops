@@ -44,7 +44,7 @@ jobs:
             displayName: Deploy to kubernetes cluster
             inputs:
               action: 'deploy'
-              manifests: '$(Pipeline.Workspace)/manifests/pocrandd.yml'
+              manifests: '$(Pipeline.Workspace)/manifests/uat-pocrandd.yml'
               containers: '$(containerRegistry)/$(imageRepository):$(tag)'
 - job: Ingress
   dependsOn: Service
