@@ -53,6 +53,15 @@ jobs:
       command: 'apply'
       arguments: '-f manifests/ingress-rules.yml'
       outputFormat: 'none'
+  - task: Kubernetes@1
+    displayName: 'Get Ingress IP'
+    inputs:
+      connectionType: 'Kubernetes Service Connection'
+      kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
+      namespace: 'default'
+      command: 'get'
+      arguments: 'svc --namespace default kubernetes --template "{{range (index .status.loadBalacer.ingress 0)}}{{.}}{{end}}"'
+      outputFormat: 'json'
 
 - deployment: Service
   pool:
