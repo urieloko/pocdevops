@@ -63,9 +63,9 @@ jobs:
       command: 'get'
       arguments: 'ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'''
       outputFormat: 'none'
-
+  
   - script: |
-      echo $(ProduceVar.MyVar)
+      echo $(GetIngressIp.KubectlOutput)
   
 - deployment: Service
   pool:
