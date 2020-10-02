@@ -14,7 +14,7 @@ variables:
   imageRepository: 'pocrandd'
   tag: $(Build.BuildNumber)
   #UriAppPocRandD: 'http://40.124.90.48/'
-  ingressip: ''
+  #ingressip: ''
 jobs:
 - job: CR
   pool:
@@ -63,10 +63,8 @@ jobs:
       command: 'get'
       arguments: 'ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'''
       outputFormat: 'none'
-  - bash: echo '##vso[task.setvariable variable=ingressip]$(GetIngressIp.KubectlOutput)'
+  - bash: echo '##vso[task.setvariable variable=ip;isOutput=true]$(GetIngressIp.KubectlOutput)'
     name: IngressIp
-  - script: |
-      echo $(ingressip)
       
 - deployment: Service
   pool:
@@ -93,7 +91,7 @@ jobs:
     - Ingress 
   condition: succeeded()
   variables:
-    UriAppPocRandD: $[format('https://{0}/', variable.ingressip)]
+    UriAppPocRandD: $[format('https://{0}/', dependencies.Ingress.outputs['IngressIp.ip'])]
   steps:
   - script: dotnet build src --configuration $(buildConfiguration)
     displayName: 'Build Tests Project'
