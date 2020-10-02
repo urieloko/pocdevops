@@ -85,6 +85,12 @@ jobs:
 - job: SeleniumTests
   pool:
     vmImage: 'windows-2019'
+  dependsOn: 
+    - Service
+    - Ingress 
+  condition: succeeded()
+  variables:
+    UriAppPocRandD: $('http://'$[ dependencies.Ingress.outputs['GetIngressIp.KubectlOutput'] ]'/')
   steps:
   - script: dotnet build src --configuration $(buildConfiguration)
     displayName: 'Build Tests Project'
@@ -95,8 +101,7 @@ jobs:
     displayName: 'FunctionalTests'
   - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact Selenium Results'    
-  dependsOn: Service    
-  condition: succeeded()
+
 - job: JMeterTests
   pool:
     vmImage: ubuntu-latest
