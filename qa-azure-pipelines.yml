@@ -60,7 +60,7 @@ jobs:
       kubernetesServiceEndpoint: 'qaakspocrandd-default-admin'
       namespace: 'default'
       command: 'get'
-      arguments: 'svc --namespace default kubernetes --template "{{range (index .status.loadBalacer.ingress 0)}}{{.}}{{end}}"'
+      arguments: 'all'
       outputFormat: 'json'
 
 - deployment: Service
