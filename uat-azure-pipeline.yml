@@ -70,6 +70,7 @@ jobs:
       arguments: '-f manifests/ingress-rules.yml'
       outputFormat: 'none'
   - task: AzureCLI@1
+    name: IngressIp
     displayName: Wait for IP
     inputs:
       azureSubscription: '$(azConnection)'
@@ -83,6 +84,7 @@ jobs:
           echo $IP
           if [ -n $IP ]; then
             echo "Ingress ip is $IP"
+            echo '##vso[task.setvariable variable=ip;isOutput=true]$IP'
             break
           else
             echo "Got $IP :( Not done yet..."
@@ -102,8 +104,8 @@ jobs:
       outputFormat: 'none'
 
 
-  - bash: echo '##vso[task.setvariable variable=ip;isOutput=true]$(GetIngressIp.KubectlOutput)'
-    name: IngressIp
+  #- bash: echo '##vso[task.setvariable variable=ip;isOutput=true]$(GetIngressIp.KubectlOutput)'
+  #  name: IngressIp
       
 - job: SeleniumTests
   pool:
