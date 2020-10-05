@@ -72,7 +72,7 @@ jobs:
       outputFormat: 'none'
   
   - task: AzureCLI@1
-    name: IngressIpBash
+    name: IngressIp
     displayName: Wait for IP
     inputs:
       azureSubscription: '$(azConnection)'
@@ -91,21 +91,6 @@ jobs:
           fi
           sleep 5
         done
-  - script: echo $(IngressIpBash.ip)
-  
-  - task: Kubernetes@1
-    name: GetIngressIp
-    displayName: 'Get Ingress IP'
-    inputs:
-      connectionType: 'Kubernetes Service Connection'
-      kubernetesServiceEndpoint: $(aksConnection)
-      namespace: 'default'
-      command: 'get'
-      arguments: 'ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'''
-      outputFormat: 'none'
-
-  - bash: echo '##vso[task.setvariable variable=ip;isOutput=true]$(GetIngressIp.KubectlOutput)'
-    name: IngressIp
       
 - job: SeleniumTests
   pool:
