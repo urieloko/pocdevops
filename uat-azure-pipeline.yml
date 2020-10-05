@@ -80,7 +80,7 @@ jobs:
         while true
         do
           export IP=$(kubectl get ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'')
-          if [ -n $IP ]; then
+          if [ -n $IP && $IP != "''''" ]; then
             echo "Ingress ip is $IP"
             echo "##vso[task.setvariable variable=ip;isOutput=true]$IP"
             break
