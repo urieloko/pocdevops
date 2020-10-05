@@ -61,6 +61,7 @@ jobs:
       command: 'apply'
       arguments: '-f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/cloud/deploy.yaml'
       outputFormat: 'none'
+  
   - task: Kubernetes@1
     displayName: 'Ingress Rules'
     inputs:
@@ -69,6 +70,7 @@ jobs:
       command: 'apply'
       arguments: '-f manifests/ingress-rules.yml'
       outputFormat: 'none'
+  
   - task: AzureCLI@1
     name: IngressIpBash
     displayName: Wait for IP
@@ -90,6 +92,7 @@ jobs:
           sleep 5
         done
   - script: echo $(IngressIpBash.ip)
+  
   - task: Kubernetes@1
     name: GetIngressIp
     displayName: 'Get Ingress IP'
@@ -100,7 +103,6 @@ jobs:
       command: 'get'
       arguments: 'ingress ingress-rules -o=jsonpath=''{@.status.loadBalancer.ingress[0].ip}'''
       outputFormat: 'none'
-
 
   - bash: echo '##vso[task.setvariable variable=ip;isOutput=true]$(GetIngressIp.KubectlOutput)'
     name: IngressIp
