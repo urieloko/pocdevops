@@ -7,15 +7,18 @@ trigger:
 - release
 
 variables:
-  buildId: uat-$(Build.BuildNumber)
-  buildConfiguration: 'Release'
-  containerRegistry: 'uatacrpocrandd.azurecr.io'
-  imageRepository: 'pocrandd'
-  tag: $(Build.BuildNumber)
-  aksConnection: 'uatakspocrandd-default-admin'
   azConnection: 'dosppocrandd'
+  buildConfiguration: 'Release'
+  tag: $(Build.BuildNumber)
+  buildId: uat-$(Build.BuildNumber)
+  containerRegistry: 'uatacrpocrandd.azurecr.io'
+  acrConnection: 'uatacrpocrandd'
+  imageRepository: 'pocrandd'
+  aksConnection: 'uatakspocrandd-default-admin'
   aksName: 'uatakspocrandd'
+  environment: 'uatakspocrandd.default'
   rgpName: 'uatrgppocrandd'
+  deploymentYml: 'uat-pocrandd.yml' 
 jobs:
 - job: CR
   pool:
@@ -23,7 +26,7 @@ jobs:
   steps:
     - task: Docker@2
       inputs:
-        containerRegistry: 'uatacrpocrandd'
+        containerRegistry: $(acrConnection)
         repository: '$(imageRepository)'
         command: 'buildAndPush'
         Dockerfile: 'src/Dockerfile'
@@ -37,7 +40,7 @@ jobs:
     vmImage: 'ubuntu-latest'
   displayName: Service
   dependsOn: CR
-  environment: 'uatakspocrandd.default'
+  environment: $(environment)
   strategy:
     runOnce:
       deploy:
@@ -46,7 +49,7 @@ jobs:
             displayName: Deploy to kubernetes cluster
             inputs:
               action: 'deploy'
-              manifests: '$(Pipeline.Workspace)/manifests/uat-pocrandd.yml'
+              manifests: '$(Pipeline.Workspace)/manifests/$(deploymentYml)'
               containers: '$(containerRegistry)/$(imageRepository):$(tag)'
 - job: Ingress
   dependsOn: Service
@@ -91,7 +94,7 @@ jobs:
           fi
           sleep 5
         done
-      
+
 - job: SeleniumTests
   pool:
     vmImage: 'windows-2019'
