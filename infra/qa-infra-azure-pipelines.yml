@@ -1,10 +1,10 @@
 trigger:
 - QA/infra
 variables:
-  azureSubscription: 'dosppocrandd'
+  azureSubscription: 'POC_DEV'
   region: 'southcentralus'
   environment: 'qa'
-  project: 'pocrandd'
+  project: 'pocrandd1'
 pool:
   vmImage: 'windows-latest'
 
