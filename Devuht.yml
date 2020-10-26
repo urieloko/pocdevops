@@ -38,6 +38,7 @@ steps:
     cliProjectKey: 'devuht'
     cliProjectName: 'devuht'
     cliSources: '.'
+ 
     
 - task: VSTest@2
   inputs:
@@ -51,4 +52,3 @@ steps:
 - task: SonarCloudPublish@1
   inputs:
     pollingTimeoutSec: '300'
-    
